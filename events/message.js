@@ -1,5 +1,6 @@
 const {prefix} = require('../config.json');
 
+
 module.exports = {
     name: "message",
     execute(message, client) {

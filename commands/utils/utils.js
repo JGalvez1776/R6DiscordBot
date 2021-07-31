@@ -21,8 +21,5 @@ function generateURL(platform, username) {
   return 'https://r6.tracker.network/profile/' + end;
 }
 
-function reply(msg, mmr) {
 
-}
-
-module.exports = {getRating, generateURL, reply, fetch};
+module.exports = {getRating, generateURL, fetch};
