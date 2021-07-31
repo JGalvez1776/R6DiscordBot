@@ -3,39 +3,19 @@ require('dotenv').config()
 // Maybe remove these two lines
 const jsdom = require("jsdom");
 const { JSDOM } = jsdom;
-
-const fetch = require("node-fetch");
+const fs = require('fs');
 
 const Discord = require('discord.js');
 const {prefix, token} = require('./config.json');
 const client = new Discord.Client();
+client.commands = new Discord.Collection();
 
-async function getRating(url) {
-    console.log(url)
-    const response = await fetch(url);  
-    const text = await response.text();
+const commandFiles = fs.readdirSync('./commands').filter(file => file.endsWith('.js'));
 
-    try { 
-        // If the website gets changed this breaks 
-        var mmr = text.match(/>.*MMR/g)[7].slice(1, -3);
-        console.log(mmr);
-        return mmr
-    } catch (error) {
-        console.error(error);
-        return;
-    }
+for (const file of commandFiles) {
+    const command = require('./commands/' + file);
+    client.commands.set(command.name, command);
 }
-
-
-function generateURL(platform, username) {
-  var end =  platform + '/' + username
-  return 'https://r6.tracker.network/profile/' + end;
-}
-
-function reply(msg, mmr) {
-
-}
-
 
 client.on('ready', () => {
     console.log('Logged in as ' + client.user.tag + '!');
@@ -48,16 +28,14 @@ client.on('message', message => {
     const command = args.shift().toLowerCase();
     console.log(command);
 
-    if (command === 'ping') {
-        console.log('pong');
-        message.reply("pong");
+    if (!client.commands.has(command)) return;
+
+    try {
+        client.commands.get(command).execute(message, args);
+    } catch (error) {
+        console.error(error);
+        message.reply('An error encountered trying to execute your command');
     }
-    if (command === "a") {
-        var url = generateURL("xbox", "PK Hot Plays");
-        console.log(url);
-        var result = getRating(url).then((value) => message.reply(value));
-    }
-    
 });
 
 client.login(process.env.TOKEN);
